@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Evolution</title>
+    <!-- Sử dụng Tailwind CSS cho Giao diện Dark Mode nhanh chóng -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #111827; color: white; user-select: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
+        .screen.active { display: flex; }
+        canvas { background: #1f2937; border: 2px solid #374151; box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); }
+        .btn { padding: 12px 24px; margin: 8px; background: #3b82f6; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: center; width: 220px; }
+        .btn:hover { background: #2563eb; transform: scale(1.05); }
+        .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
+        .btn-red { background: #ef4444; } .btn-red:hover { background: #dc2626; }
+        
+        #game-container { display: flex; gap: 20px; align-items: flex-start; }
+        .side-panel { display: flex; flex-direction: column; gap: 15px; width: 150px; }
+        .info-box { background: #1f2937; padding: 15px; border-radius: 8px; border: 1px solid #374151; text-align: center; }
+        .info-value { font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
+        
+        #overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.8); flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+        #overlay.active { display: flex; }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN MENU -->
+    <div id="menu-screen" class="screen active">
+        <h1 class="text-6xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">TETRIS</h1>
+        <p class="text-gray-400 mb-8 tracking-widest">EVOLUTION</p>
+        <button class="btn btn-green" onclick="startGame(1)">Chơi Ngay (Level 1)</button>
+        <button class="btn" onclick="switchScreen('level-screen')">Chọn Level</button>
+        <button class="btn" onclick="switchScreen('help-screen')">Hướng Dẫn</button>
+    </div>
+
+    <!-- LEVEL SELECTION -->
+    <div id="level-screen" class="screen">
+        <h2 class="text-3xl font-bold mb-6">CHỌN LEVEL</h2>
+        <div class="grid grid-cols-2 gap-4 max-w-2xl mb-8">
+            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(1)">
+                <div class="text-xl font-bold text-blue-400">Lv 1: Classic</div><div class="text-sm text-gray-400">Luật chơi cơ bản, tốc độ chuẩn.</div>
+            </div>
+            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(2)">
+                <div class="text-xl font-bold text-blue-400">Lv 2: Blind Mode</div><div class="text-sm text-gray-400">Ẩn bóng mờ & Khối tiếp theo.</div>
+            </div>
+            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(3)">
+                <div class="text-xl font-bold text-blue-400">Lv 3: Obstacle</div><div class="text-sm text-gray-400">Khởi đầu với 3 hàng rác dưới đáy.</div>
+            </div>
+            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(4)">
+                <div class="text-xl font-bold text-blue-400">Lv 4: Garbage Attack</div><div class="text-sm text-gray-400">Cứ thả 5 khối bị đẩy thêm 1 hàng rác.</div>
+            </div>
+            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(5)">
+                <div class="text-xl font-bold text-blue-400">Lv 5: Earthquake</div><div class="text-sm text-gray-400">Cứ 10s bàn cờ bị rung lắc ngẫu nhiên.</div>
+            </div>
+            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(6)">
+                <div class="text-xl font-bold text-blue-400">Lv 6: Sudden Death</div><div class="text-sm text-gray-400">Tốc độ siêu nhanh, cấm xoay khối!</div>
+            </div>
+        </div>
+        <button class="btn btn-red" onclick="switchScreen('menu-screen')">Quay lại Menu</button>
+    </div>
+
+    <!-- HELP SCREEN -->
+    <div id="help-screen" class="screen">
+        <h2 class="text-3xl font-bold mb-6">HƯỚNG DẪN CHƠI</h2>
+        <div class="max-w-xl text-left bg-gray-800 p-6 rounded-lg mb-6 shadow-lg border border-gray-700">
+            <h3 class="text-xl text-emerald-400 font-bold mb-2">🎮 Điều khiển:</h3>
+            <ul class="list-disc ml-5 mb-4 text-gray-300">
+                <li><b class="text-white">Mũi tên Trái/Phải:</b> Di chuyển khối</li>
+                <li><b class="text-white">Mũi tên Lên:</b> Xoay khối (Vô hiệu ở Lv 6)</li>
+                <li><b class="text-white">Mũi tên Xuống:</b> Rơi nhanh (Soft drop)</li>
+                <li><b class="text-white">Phím Space:</b> Rơi thẳng xuống (Hard drop)</li>
+                <li><b class="text-white">Phím P:</b> Tạm dừng (Pause)</li>
+            </ul>
+            <h3 class="text-xl text-emerald-400 font-bold mb-2">⭐ Tính điểm & Thăng cấp:</h3>
+            <p class="text-gray-300">Ăn nhiều hàng cùng lúc được nhiều điểm hơn (100, 300, 500, 800) nhân với Level hiện tại. Đạt đủ mốc `Level * 1000` điểm sẽ tự động chuyển sang Level tiếp theo với luật chơi mới.</p>
+        </div>
+        <button class="btn btn-red" onclick="switchScreen('menu-screen')">Quay lại Menu</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen">
+        <div class="mb-4 text-2xl font-bold text-emerald-400" id="level-title">LEVEL 1: CLASSIC</div>
+        
+        <div id="game-container">
+            <!-- Left Info -->
+            <div class="side-panel">
+                <div class="info-box">
+                    <div class="text-sm text-gray-400">SCORE</div>
+                    <div class="info-value" id="score-val">0</div>
+                </div>
+                <div class="info-box">
+                    <div class="text-sm text-gray-400">LINES</div>
+                    <div class="info-value" id="lines-val">0</div>
+                </div>
+                <div class="info-box">
+                    <div class="text-sm text-gray-400">LEVEL</div>
+                    <div class="info-value text-blue-400" id="level-val">1</div>
+                </div>
+                <button class="btn btn-red !w-full !m-0 mt-auto" onclick="exitGame()">Bỏ cuộc</button>
+            </div>
+
+            <!-- Main Game Canvas -->
+            <div style="position: relative;">
+                <canvas id="tetris" width="240" height="480"></canvas>
+                <!-- Overlays -->
+                <div id="overlay">
+                    <h2 id="overlay-title" class="text-4xl font-bold text-red-500 mb-2">GAME OVER</h2>
+                    <p class="text-gray-300 mb-6" id="overlay-desc">Điểm của bạn: 0</p>
+                    <button id="resume-btn" class="btn btn-green hidden" onclick="togglePause()">Tiếp Tục</button>
+                    <button class="btn btn-blue" onclick="startGame(player.level)">Chơi Lại Level Này</button>
+                    <button class="btn btn-red" onclick="exitGame()">Về Menu</button>
+                </div>
+            </div>
+
+            <!-- Right Info -->
+            <div class="side-panel">
+                <div class="info-box" style="height: 120px;">
+                    <div class="text-sm text-gray-400 mb-2">NEXT</div>
+                    <canvas id="next-piece" width="80" height="80" class="mx-auto border-none shadow-none bg-transparent"></canvas>
+                </div>
+                <div class="mt-4 p-3 bg-gray-800 rounded border border-gray-700 text-xs text-gray-400 text-center">
+                    [↑] Xoay<br>[SPACE] Rơi thẳng<br>[P] Tạm dừng
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC TỪ EXTERNAL FILE -->
+    <script src="game.js"></script>
+</body>
+</html>
