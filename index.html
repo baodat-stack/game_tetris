@@ -4,131 +4,393 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris Evolution</title>
-    <!-- Sử dụng Tailwind CSS cho Giao diện Dark Mode nhanh chóng -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #111827; color: white; user-select: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
-        .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
-        .screen.active { display: flex; }
-        canvas { background: #1f2937; border: 2px solid #374151; box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); }
-        .btn { padding: 12px 24px; margin: 8px; background: #3b82f6; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: center; width: 220px; }
-        .btn:hover { background: #2563eb; transform: scale(1.05); }
-        .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
-        .btn-red { background: #ef4444; } .btn-red:hover { background: #dc2626; }
-        
-        #game-container { display: flex; gap: 20px; align-items: flex-start; }
-        .side-panel { display: flex; flex-direction: column; gap: 15px; width: 150px; }
-        .info-box { background: #1f2937; padding: 15px; border-radius: 8px; border: 1px solid #374151; text-align: center; }
-        .info-value { font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
-        
-        #overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.8); flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
-        #overlay.active { display: flex; }
+        body {
+            background-color: #111827;
+            color: #ffffff;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .man-hinh {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .man-hinh.kich-hoat {
+            display: flex;
+        }
+
+        canvas {
+            background-color: #1f2937;
+            border: 2px solid #374151;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .nut-bam {
+            padding: 12px 24px;
+            margin: 8px;
+            background-color: #3b82f6;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            text-align: center;
+            width: 220px;
+            box-sizing: border-box;
+        }
+
+        .nut-bam:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .nut-xanh-la {
+            background-color: #10b981;
+        }
+
+        .nut-xanh-la:hover {
+            background-color: #059669;
+        }
+
+        .nut-do {
+            background-color: #ef4444;
+        }
+
+        .nut-do:hover {
+            background-color: #dc2626;
+        }
+
+        .nut-xanh-duong {
+            background-color: #3b82f6;
+        }
+
+        .nut-xanh-duong:hover {
+            background-color: #2563eb;
+        }
+
+        .nut-bo-cuoc {
+            width: 100%;
+            margin: 0;
+            margin-top: auto;
+        }
+
+        .khung-tro-choi {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .bang-ben {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 150px;
+        }
+
+        .o-thong-tin {
+            background-color: #1f2937;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .tieu-de-thong-tin {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .gia-tri-thong-tin {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .gia-tri-man-choi {
+            color: #60a5fa;
+        }
+
+        .khung-canvas-chinh {
+            position: relative;
+        }
+
+        .lop-phu-thong-bao {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .lop-phu-thong-bao.kich-hoat {
+            display: flex;
+        }
+
+        .tieu-de-thong-bao {
+            font-size: 2.25rem;
+            font-weight: bold;
+            color: #ef4444;
+            margin: 0 0 8px 0;
+        }
+
+        .noi-dung-thong-bao {
+            color: #d1d5db;
+            margin: 0 0 24px 0;
+            font-size: 1rem;
+        }
+
+        .tieu-de-chinh {
+            font-size: 3.75rem;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .phu-de-chinh {
+            color: #9ca3af;
+            margin: 0 0 32px 0;
+            letter-spacing: 0.25em;
+            font-weight: 500;
+        }
+
+        .tieu-de-man-hinh {
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin: 0 0 24px 0;
+        }
+
+        .luoi-chon-man {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            max-width: 42rem;
+            margin-bottom: 32px;
+            width: 100%;
+        }
+
+        .the-chon-man {
+            background-color: #1f2937;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .the-chon-man:hover {
+            border-color: #60a5fa;
+            transform: translateY(-2px);
+        }
+
+        .ten-man-choi {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #60a5fa;
+            margin-bottom: 4px;
+        }
+
+        .mo-ta-man-choi {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .hop-huong-dan {
+            max-width: 36rem;
+            width: 100%;
+            text-align: left;
+            background-color: #1f2937;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid #374151;
+            box-sizing: border-box;
+        }
+
+        .muc-huong-dan {
+            font-size: 1.25rem;
+            color: #34d399;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+        }
+
+        .danh-sach-dieu-khien {
+            list-style-type: disc;
+            margin: 0 0 16px 20px;
+            padding: 0;
+            color: #d1d5db;
+        }
+
+        .danh-sach-dieu-khien li {
+            margin-bottom: 6px;
+        }
+
+        .chu-nhan-manh {
+            color: #ffffff;
+        }
+
+        .noi-dung-huong-dan {
+            color: #d1d5db;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .tieu-de-man-hien-tai {
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #34d399;
+        }
+
+        .o-xem-truoc {
+            height: 120px;
+        }
+
+        .canvas-tiep-theo {
+            margin: 0 auto;
+            border: none;
+            box-shadow: none;
+            background-color: transparent;
+            display: block;
+        }
+
+        .hop-ghi-chu-phim {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #1f2937;
+            border-radius: 6px;
+            border: 1px solid #374151;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .an {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
 
-    <!-- MAIN MENU -->
-    <div id="menu-screen" class="screen active">
-        <h1 class="text-6xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">TETRIS</h1>
-        <p class="text-gray-400 mb-8 tracking-widest">EVOLUTION</p>
-        <button class="btn btn-green" onclick="startGame(1)">Chơi Ngay (Level 1)</button>
-        <button class="btn" onclick="switchScreen('level-screen')">Chọn Level</button>
-        <button class="btn" onclick="switchScreen('help-screen')">Hướng Dẫn</button>
+    <div id="man-hinh-menu" class="man-hinh kich-hoat">
+        <h1 class="tieu-de-chinh">TETRIS</h1>
+        <p class="phu-de-chinh">EVOLUTION</p>
+        <button class="nut-bam nut-xanh-la" onclick="batDauTroChoi(1)">Chơi Ngay (Level 1)</button>
+        <button class="nut-bam" onclick="chuyenManHinh('man-hinh-chon-man')">Chọn Level</button>
+        <button class="nut-bam" onclick="chuyenManHinh('man-hinh-huong-dan')">Hướng Dẫn</button>
     </div>
 
-    <!-- LEVEL SELECTION -->
-    <div id="level-screen" class="screen">
-        <h2 class="text-3xl font-bold mb-6">CHỌN LEVEL</h2>
-        <div class="grid grid-cols-2 gap-4 max-w-2xl mb-8">
-            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(1)">
-                <div class="text-xl font-bold text-blue-400">Lv 1: Classic</div><div class="text-sm text-gray-400">Luật chơi cơ bản, tốc độ chuẩn.</div>
+    <div id="man-hinh-chon-man" class="man-hinh">
+        <h2 class="tieu-de-man-hinh">CHỌN LEVEL</h2>
+        <div class="luoi-chon-man">
+            <div class="the-chon-man" onclick="batDauTroChoi(1)">
+                <div class="ten-man-choi">Lv 1: Classic</div>
+                <div class="mo-ta-man-choi">Luật chơi cơ bản, tốc độ chuẩn.</div>
             </div>
-            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(2)">
-                <div class="text-xl font-bold text-blue-400">Lv 2: Blind Mode</div><div class="text-sm text-gray-400">Ẩn bóng mờ & Khối tiếp theo.</div>
+            <div class="the-chon-man" onclick="batDauTroChoi(2)">
+                <div class="ten-man-choi">Lv 2: Blind Mode</div>
+                <div class="mo-ta-man-choi">Ẩn bóng mờ & Khối tiếp theo.</div>
             </div>
-            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(3)">
-                <div class="text-xl font-bold text-blue-400">Lv 3: Obstacle</div><div class="text-sm text-gray-400">Khởi đầu với 3 hàng rác dưới đáy.</div>
+            <div class="the-chon-man" onclick="batDauTroChoi(3)">
+                <div class="ten-man-choi">Lv 3: Obstacle</div>
+                <div class="mo-ta-man-choi">Khởi đầu với 3 hàng rác dưới đáy.</div>
             </div>
-            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(4)">
-                <div class="text-xl font-bold text-blue-400">Lv 4: Garbage Attack</div><div class="text-sm text-gray-400">Cứ thả 5 khối bị đẩy thêm 1 hàng rác.</div>
+            <div class="the-chon-man" onclick="batDauTroChoi(4)">
+                <div class="ten-man-choi">Lv 4: Garbage Attack</div>
+                <div class="mo-ta-man-choi">Cứ thả 5 khối bị đẩy thêm 1 hàng rác.</div>
             </div>
-            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(5)">
-                <div class="text-xl font-bold text-blue-400">Lv 5: Earthquake</div><div class="text-sm text-gray-400">Cứ 10s bàn cờ bị rung lắc ngẫu nhiên.</div>
+            <div class="the-chon-man" onclick="batDauTroChoi(5)">
+                <div class="ten-man-choi">Lv 5: Earthquake</div>
+                <div class="mo-ta-man-choi">Cứ 10s bàn cờ bị rung lắc ngẫu nhiên.</div>
             </div>
-            <div class="info-box cursor-pointer hover:border-blue-400" onclick="startGame(6)">
-                <div class="text-xl font-bold text-blue-400">Lv 6: Sudden Death</div><div class="text-sm text-gray-400">Tốc độ siêu nhanh, cấm xoay khối!</div>
+            <div class="the-chon-man" onclick="batDauTroChoi(6)">
+                <div class="ten-man-choi">Lv 6: Sudden Death</div>
+                <div class="mo-ta-man-choi">Tốc độ siêu nhanh, cấm xoay khối!</div>
             </div>
         </div>
-        <button class="btn btn-red" onclick="switchScreen('menu-screen')">Quay lại Menu</button>
+        <button class="nut-bam nut-do" onclick="chuyenManHinh('man-hinh-menu')">Quay lại Menu</button>
     </div>
 
-    <!-- HELP SCREEN -->
-    <div id="help-screen" class="screen">
-        <h2 class="text-3xl font-bold mb-6">HƯỚNG DẪN CHƠI</h2>
-        <div class="max-w-xl text-left bg-gray-800 p-6 rounded-lg mb-6 shadow-lg border border-gray-700">
-            <h3 class="text-xl text-emerald-400 font-bold mb-2">🎮 Điều khiển:</h3>
-            <ul class="list-disc ml-5 mb-4 text-gray-300">
-                <li><b class="text-white">Mũi tên Trái/Phải:</b> Di chuyển khối</li>
-                <li><b class="text-white">Mũi tên Lên:</b> Xoay khối (Vô hiệu ở Lv 6)</li>
-                <li><b class="text-white">Mũi tên Xuống:</b> Rơi nhanh (Soft drop)</li>
-                <li><b class="text-white">Phím Space:</b> Rơi thẳng xuống (Hard drop)</li>
-                <li><b class="text-white">Phím P:</b> Tạm dừng (Pause)</li>
+    <div id="man-hinh-huong-dan" class="man-hinh">
+        <h2 class="tieu-de-man-hinh">HƯỚNG DẪN CHƠI</h2>
+        <div class="hop-huong-dan">
+            <h3 class="muc-huong-dan">🎮 Điều khiển:</h3>
+            <ul class="danh-sach-dieu-khien">
+                <li><b class="chu-nhan-manh">Mũi tên Trái/Phải:</b> Di chuyển khối</li>
+                <li><b class="chu-nhan-manh">Mũi tên Lên:</b> Xoay khối (Vô hiệu ở Lv 6)</li>
+                <li><b class="chu-nhan-manh">Mũi tên Xuống:</b> Rơi nhanh (Soft drop)</li>
+                <li><b class="chu-nhan-manh">Phím Space:</b> Rơi thẳng xuống (Hard drop)</li>
+                <li><b class="chu-nhan-manh">Phím P:</b> Tạm dừng (Pause)</li>
             </ul>
-            <h3 class="text-xl text-emerald-400 font-bold mb-2">⭐ Tính điểm & Thăng cấp:</h3>
-            <p class="text-gray-300">Ăn nhiều hàng cùng lúc được nhiều điểm hơn (100, 300, 500, 800) nhân với Level hiện tại. Đạt đủ mốc `Level * 1000` điểm sẽ tự động chuyển sang Level tiếp theo với luật chơi mới.</p>
+            <h3 class="muc-huong-dan">⭐ Tính điểm & Thăng cấp:</h3>
+            <p class="noi-dung-huong-dan">Ăn nhiều hàng cùng lúc được nhiều điểm hơn (100, 300, 500, 800) nhân với Level hiện tại. Đạt đủ mốc `Level * 1000` điểm sẽ tự động chuyển sang Level tiếp theo với luật chơi mới.</p>
         </div>
-        <button class="btn btn-red" onclick="switchScreen('menu-screen')">Quay lại Menu</button>
+        <button class="nut-bam nut-do" onclick="chuyenManHinh('man-hinh-menu')">Quay lại Menu</button>
     </div>
 
-    <!-- GAME SCREEN -->
-    <div id="game-screen" class="screen">
-        <div class="mb-4 text-2xl font-bold text-emerald-400" id="level-title">LEVEL 1: CLASSIC</div>
+    <div id="man-hinh-tro-choi" class="man-hinh">
+        <div class="tieu-de-man-hien-tai" id="tieu-de-man-choi">LEVEL 1: CLASSIC</div>
         
-        <div id="game-container">
-            <!-- Left Info -->
-            <div class="side-panel">
-                <div class="info-box">
-                    <div class="text-sm text-gray-400">SCORE</div>
-                    <div class="info-value" id="score-val">0</div>
+        <div class="khung-tro-choi">
+            <div class="bang-ben">
+                <div class="o-thong-tin">
+                    <div class="tieu-de-thong-tin">SCORE</div>
+                    <div class="gia-tri-thong-tin" id="gia-tri-diem">0</div>
                 </div>
-                <div class="info-box">
-                    <div class="text-sm text-gray-400">LINES</div>
-                    <div class="info-value" id="lines-val">0</div>
+                <div class="o-thong-tin">
+                    <div class="tieu-de-thong-tin">LINES</div>
+                    <div class="gia-tri-thong-tin" id="gia-tri-hang">0</div>
                 </div>
-                <div class="info-box">
-                    <div class="text-sm text-gray-400">LEVEL</div>
-                    <div class="info-value text-blue-400" id="level-val">1</div>
+                <div class="o-thong-tin">
+                    <div class="tieu-de-thong-tin">LEVEL</div>
+                    <div class="gia-tri-thong-tin gia-tri-man-choi" id="gia-tri-man">1</div>
                 </div>
-                <button class="btn btn-red !w-full !m-0 mt-auto" onclick="exitGame()">Bỏ cuộc</button>
+                <button class="nut-bam nut-do nut-bo-cuoc" onclick="thoatTroChoi()">Bỏ cuộc</button>
             </div>
 
-            <!-- Main Game Canvas -->
-            <div style="position: relative;">
-                <canvas id="tetris" width="240" height="480"></canvas>
-                <!-- Overlays -->
-                <div id="overlay">
-                    <h2 id="overlay-title" class="text-4xl font-bold text-red-500 mb-2">GAME OVER</h2>
-                    <p class="text-gray-300 mb-6" id="overlay-desc">Điểm của bạn: 0</p>
-                    <button id="resume-btn" class="btn btn-green hidden" onclick="togglePause()">Tiếp Tục</button>
-                    <button class="btn btn-blue" onclick="startGame(player.level)">Chơi Lại Level Này</button>
-                    <button class="btn btn-red" onclick="exitGame()">Về Menu</button>
+            <div class="khung-canvas-chinh">
+                <canvas id="ban-co" width="240" height="480"></canvas>
+                <div id="lop-phu-thong-bao" class="lop-phu-thong-bao">
+                    <h2 id="tieu-de-thong-bao" class="tieu-de-thong-bao">GAME OVER</h2>
+                    <p class="noi-dung-thong-bao" id="noi-dung-thong-bao">Điểm của bạn: 0</p>
+                    <button id="nut-tiep-tuc" class="nut-bam nut-xanh-la an" onclick="chuyenDoiTamDung()">Tiếp Tục</button>
+                    <button class="nut-bam nut-xanh-duong" onclick="batDauTroChoi(nguoiChoi.capDo)">Chơi Lại Level Này</button>
+                    <button class="nut-bam nut-do" onclick="thoatTroChoi()">Về Menu</button>
                 </div>
             </div>
 
-            <!-- Right Info -->
-            <div class="side-panel">
-                <div class="info-box" style="height: 120px;">
-                    <div class="text-sm text-gray-400 mb-2">NEXT</div>
-                    <canvas id="next-piece" width="80" height="80" class="mx-auto border-none shadow-none bg-transparent"></canvas>
+            <div class="bang-ben">
+                <div class="o-thong-tin o-xem-truoc">
+                    <div class="tieu-de-thong-tin">NEXT</div>
+                    <canvas id="khoi-tiep-theo" width="80" height="80" class="canvas-tiep-theo"></canvas>
                 </div>
-                <div class="mt-4 p-3 bg-gray-800 rounded border border-gray-700 text-xs text-gray-400 text-center">
+                <div class="hop-ghi-chu-phim">
                     [↑] Xoay<br>[SPACE] Rơi thẳng<br>[P] Tạm dừng
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC TỪ EXTERNAL FILE -->
     <script src="game.js"></script>
 </body>
 </html>
